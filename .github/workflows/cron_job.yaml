@@ -1,11 +1,16 @@
 name: Run Summary Bot
 
+# on:
+#   schedule:
+#     cron:
+#       # every day at 8pm, excluding weekends
+#       - 0 20 * * 1,2,3,4,5
+
 on:
-  schedule:
-    cron:
-      # every day at 8pm, excluding weekends
-      - 0 20 * * 1,2,3,4,5
+  pull_request:
   push:
+    tags:
+    - '**'
     branches:
     - '**'
 
