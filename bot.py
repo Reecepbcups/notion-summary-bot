@@ -25,7 +25,9 @@ T: %TODAY%
 H: None
 """
 
-today = datetime.datetime.now() - datetime.timedelta(days=+2)
+os.environ["TZ"] = "America/Chicago"
+
+today = datetime.datetime.now() - datetime.timedelta(days=+3)
 todays_date = today.strftime("%Y-%m-%d")
 
 def main():
