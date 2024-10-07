@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
 
     steps:
     - uses: actions/checkout@v4
