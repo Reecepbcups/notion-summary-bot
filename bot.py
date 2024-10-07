@@ -27,7 +27,7 @@ H: None
 
 os.environ["TZ"] = "America/Chicago"
 
-today = datetime.datetime.now() - datetime.timedelta(days=+3)
+today = datetime.datetime.now() - datetime.timedelta(days=0)
 todays_date = today.strftime("%Y-%m-%d")
 
 def main():
@@ -68,8 +68,14 @@ def msg_output(output: str):
         print("No DISCORD_WEBHOOK found in .env. Not sending message.")
         return
 
-    webhook = SyncWebhook.from_url(WEBHOOK_URL)
-    webhook.send(username="Slack Updates", embed=getProposalEmbed(f"Updates {todays_date}", output))
+    # webhook = SyncWebhook.from_url(WEBHOOK_URL)
+    # webhook.send(username="Slack Updates", embed=getProposalEmbed(f"Updates {todays_date}", output))
+
+    response = httpx.post(WEBHOOK_URL, json={"content": output})
+    if response.status_code == 204:
+        print("Message sent successfully!")
+    else:
+        print(f"Failed to send message: {response.status_code}")
 
 def add_previous_event_dates(today: datetime.datetime) -> list[str]:
     todays_day = today.strftime("%A")
