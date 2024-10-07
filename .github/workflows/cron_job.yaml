@@ -1,18 +1,12 @@
 name: Run Summary Bot
 
-# on:
-#   schedule:
-#     cron:
-#       # every day at 8pm, excluding weekends
-#       - 0 20 * * 1,2,3,4,5
-
 on:
-  pull_request:
-  push:
-    tags:
-    - '**'
-    branches:
-    - '**'
+  schedule:
+    # Every weekday at 8PM
+    - cron: 0 20 * * 1,2,3,4,5
+  # push:
+  #   branches:
+  #   - '**'
 
 permissions:
   contents: read
@@ -38,7 +32,5 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run bot.py
-      run: |
-        python ./bot.py
-      # use secret env DISCORD_WEBHOOK variable
+      run: python ./bot.py
 
