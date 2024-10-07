@@ -1,11 +1,9 @@
 # pip install notion-client --break-system-packages
-
-
-
 import datetime
 import os
 
 import httpx
+from discord import Embed, SyncWebhook, Webhook
 from notion_client import Client
 
 # https://developers.notion.com/reference/create-a-token
@@ -27,14 +25,14 @@ T: %TODAY%
 H: None
 """
 
+today = datetime.datetime.now() - datetime.timedelta(days=+2)
+todays_date = today.strftime("%Y-%m-%d")
+
 def main():
     notion = Client(auth=NOTION_TOKEN)
     response = notion.databases.query(database_id=DB)
     # get the first page (when do we need more?)
     page_id = response["results"][0]["id"]
-
-    today = datetime.datetime.now() - datetime.timedelta(days=0)
-    todays_date = today.strftime("%Y-%m-%d")
 
     # dates to check
     previous_dates = add_previous_event_dates(today)
@@ -48,8 +46,28 @@ def main():
     assert_require_events_to_post(todays_events, yesterday_events)
 
     output = outputFormat.replace("%YESTERDAY%", f"{format_output(yesterday_events)}").replace("%TODAY%", f"{format_output(todays_events)}")
+    msg_output(output)
 
+def get_random_hex_color() -> int:
+    return int("0x" + os.urandom(3).hex(), 16)
+
+def getProposalEmbed(name, desc) -> Embed:
+    embed = Embed(title=f"{name}", description=desc, color=get_random_hex_color())
+
+    # embed.add_field(name="", value=line, inline=False)
+    # embed.set_image(url=IMAGE)
+    return embed
+
+def msg_output(output: str):
     print(output)
+
+    WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK")
+    if not WEBHOOK_URL:
+        print("No DISCORD_WEBHOOK found in .env. Not sending message.")
+        return
+
+    webhook = SyncWebhook.from_url(WEBHOOK_URL)
+    webhook.send(username="Slack Updates", embed=getProposalEmbed(f"Updates {todays_date}", output))
 
 def add_previous_event_dates(today: datetime.datetime) -> list[str]:
     todays_day = today.strftime("%A")
@@ -80,11 +98,6 @@ def filter_events_for_date(notion_db_response: dict, date: str) -> list[NotionOb
     for result in notion_db_response["results"]:
         obj = NotionObject(**result)
         if obj.properties["Date"]["date"]["start"] == date:
-
-            # t = obj.properties["Time"]["time"]
-            # if t is not None and t > EVENT_HARD_CUTOFF_TIME:
-            #         continue
-
             events.append(obj)
     return events
 
@@ -122,9 +135,6 @@ def assert_require_events_to_post(todays_events: list[NotionObject], yesterday_e
         print(f"No events for today. Not posting."); exit(0)
     elif len(yesterday_events) == 0:
         print(f"No events for yesterday. Not posting."); exit(0)
-
-
-
 
 if __name__ == '__main__':
     main()
